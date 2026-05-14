@@ -51,7 +51,7 @@ Compara `Seq Scan` con `Index Scan`.
 
 ### Tarea 2. Afinar una consulta lenta reescribiéndola
 
-**Paso 1.** Consulta lenta (subconsulta correlacionada).
+**Paso 1.** Consulta con subconsulta correlacionada.
 ```sql
 SELECT nombre FROM productos
 WHERE categoria IN (
