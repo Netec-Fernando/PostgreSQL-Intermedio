@@ -18,7 +18,7 @@ En estas prácticas se verá cómo realizar respaldos y restauraciones físicas 
 **Paso 1.** Crea el usuario "replicador" con el rol de réplica.
 Debes conectarte a tu instancia de PostgreSQL como un superusuario (por ejemplo, `postgres`) y ejecuta el siguiente comando:
 ```sql
-sudo -i -u postgres 
+sudo -i -u postgres psql
 CREATE USER replicador WITH REPLICATION ENCRYPTED PASSWORD 'abc123';`
 \q
 ```
