@@ -110,14 +110,19 @@ Del ejercicio anterior, restaura todo el clúster de PostgreSQL. Después verifi
 `sudo systemctl stop postgresql`
 
 **Paso 2.** Elimina o renombra el `$PGDATA` actual:
-`sudo mv  /var/lib/postgresql/16/main   /var/lib/postgresql/16/main_old`
+
+`sudo mv /var/lib/postgresql/16/main   /var/lib/postgresql/16/main_old`
 
 **Paso 3.** Crea el directorio `$PGDATA` desde el usuario `postgres`:
+
 sudo -i -u postgres
+
 `mkdir  /var/lib/postgresql/16/main` 
 
 **Paso 4.** Cambiate al directorio de `respaldos` y ejecuta el comando tar para extrar el respaldo.
+
 `cd /var/lib/postgresql/respaldos`
+
 `tar -xzf base.tar.gz -C /var/lib/postgresql/16/main`
 
 **Paso 5.** Restaura los archivos de WAL.
@@ -129,13 +134,16 @@ sudo -i -u postgres
 **Paso 6** (muy importante). Actualiza el propietario y los permisos del directorio `main`.
 ```
 sudo chown postgres:postgres /var/lib/postgresql/16/main
+
 sudo chmod 700 /var/lib/postgresql/16/main
 ```
 
 **Paso 7.** Desde el usuario privilegiado inicia PostgreSQL:
+
 	`sudo systemctl start postgresql`
 
 **Paso 8.** Verifica `logs` y estado:
+
 	`tail -f /var/log/postgresql/postgresql-16-main.log`
 
 ### Tarea 3. Uso de Autovacuum: configuración y monitoreo en PostgreSQL
