@@ -84,8 +84,9 @@ En donde:
 -	Ahora, desde la máquina donde deseas almacenar el respaldo (que puede ser el mismo servidor o uno diferente, siempre que la red lo permita y `pg_hba.conf` esté configurado correctamente), puedes ejecutar desde la línea de comandos del shell tu comando `pg_basebackup`:
 Sintaxis: `pg_basebackup -h tu_ip_servidor_primario -D /respaldos/pg -Ft -z -P -U usuario_replicador`.
 
-Ejemplo:
-`pg_basebackup -h localhost -D /var/lib/postgresql/respaldos -Ft -z -P -U replicador`.
+Ejecuta el comando siguiente para hacer el respaldo:
+
+`pg_basebackup -h localhost -D /var/lib/postgresql/respaldos -Ft -z -P -U replicador`
 
 En donde:
 - `localhost`: es la máquina local.
