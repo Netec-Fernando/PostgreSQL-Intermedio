@@ -83,7 +83,7 @@ En donde:
 **Paso 5.** Realiza el respaldo usando el comando: `pg_basebackup`.
 -	Entra de nuevo a la cuenta `postgres` y crea el directorio donde se harán los respaldos:
 
-	`sudo -i -u postgres
+	`sudo -i -u postgres`
 	`mkdir /var/lib/postgresql/respaldos`
 
 -	Ahora, desde la máquina donde deseas almacenar el respaldo (que puede ser el mismo servidor o uno diferente, siempre que la red lo permita y `pg_hba.conf` esté configurado correctamente), puedes ejecutar desde la línea de comandos del shell tu comando `pg_basebackup`:
