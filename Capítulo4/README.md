@@ -42,11 +42,11 @@ En donde:
 -	Después de modificar `pg_hba.conf`, necesitas recargar la configuración de PostgreSQL para que los cambios surtan efecto. Puedes hacerlo de una de las siguientes maneras.
 	Usando `SQL` (recomendado si puedes conectarte):
 	```sql
- 	sudo -i -u postgres 
+ 	psql
 	SELECT pg_reload_conf();
  	\q
 	```
--	 O desde la línea de comandos (usando `systemd` o `init.d`) desde el usuario privilegiado:
+-	 `O` desde la línea de comandos desde el usuario privilegiado:
 	`sudo systemctl reload postgresql`
 -	`O`, dependiendo de tu versión y SO, podría ser:
 	`sudo /etc/init.d/postgresql reload`
@@ -54,12 +54,15 @@ En donde:
 **Paso 4.** Crea el directorio de archivos de WAL y configura el archivo `/etc/postgresql/16/main/postgresql.conf`.
 -	Crea el directorio `/var/lib/postgresql/archive` desde el usuario `postgres`.
 	```
- 	sudo -i -u postgres
 	mkdir /var/lib/postgresql/archive
 	```
 -	Edita y cambia en el archivo de configuración de parámetros `postgresql.conf` los siguientes parámetros y la ruta donde deseas archivar los Write-Ahead Log (WAL) de rotación (archive_command).
 -	Asegúrate de que los parámetros `wal_level`, `archive_mode` y `archive_command` estén configurados para permitir respaldos.
 	```
+	Edita el archivo y realiza los siguientes cambios:
+ 
+ 	nano /etc/postgresql/16/main/postgresql.conf
+ 
 	wal_level = replica
 	archive_mode = on
 	max_wal_senders = 2
