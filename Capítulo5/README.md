@@ -16,7 +16,7 @@ En la siguiente práctica, verás cómo realizar una replicación lógica de bas
 ### Tarea 1. Configurar la replicación del maestro-esclavo local
 
 **Requisitos**
--	PostgreSQL instalado (versión 13 o superior recomendada).
+-	PostgreSQL 16 instalado (versión 13 o superior recomendada).
 -	Dos directorios para los datos:
 
     `/var/lib/postgresql/maestro` (puede ser el `main` de un `cluster` normal).
