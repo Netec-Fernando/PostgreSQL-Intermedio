@@ -25,7 +25,7 @@ CREATE USER replicador WITH REPLICATION ENCRYPTED PASSWORD 'abc123';`
 **Paso 2.** Configura `pg_hba.conf` en el servidor primario.
 -	El archivo `pg_hba.conf` controla la autenticación de clientes de PostgreSQL. Necesitas agregar una entrada que permita al usuario replicador conectarse desde la máquina donde ejecutarás `pg_basebackup`.
 -	Localiza el archivo `pg_hba.conf`. Este archivo se encuentra típicamente en el directorio de datos de tu instalación de PostgreSQL; por ejemplo, `/etc/postgresql/16/main/pg_hba.conf` o en `/var/lib/postgresql/16/main/pg_hba.conf`, dependiendo de tu versión y sistema operativo (SO).
--	Edita el archivo `pg_hba.conf`. Abre el archivo con un editor de texto (requerirás permisos de superusuario, como `sudo`).
+-	Edita el archivo `pg_hba.conf`. Abre el archivo con un editor de texto (nano, vi) desde la cuenta `postgres`.
 -	Edita el archivo:  nano /etc/postgresql/16/main/pg_hba.conf
 -	Agrega la siguiente línea al final del archivo:
 
@@ -40,51 +40,55 @@ En donde:
 
 **Paso 3.** Recarga la configuración de PostgreSQL.
 -	Después de modificar `pg_hba.conf`, necesitas recargar la configuración de PostgreSQL para que los cambios surtan efecto. Puedes hacerlo de una de las siguientes maneras.
-	Usando `SQL` (recomendado si puedes conectarte):
+	Usando `SQL` (conéctate a la cuenta de postgres):
 	```sql
  	psql
 	SELECT pg_reload_conf();
  	\q
 	```
--	 `O` desde la línea de comandos desde el usuario privilegiado:
+-	Alternativamente desde la línea de comandos desde el usuario privilegiado, dar el comando:
 	`sudo systemctl reload postgresql`
--	`O`, dependiendo de tu versión y SO, podría ser:
-	`sudo /etc/init.d/postgresql reload`
 
 **Paso 4.** Crea el directorio de archivos de WAL y configura el archivo `/etc/postgresql/16/main/postgresql.conf`.
--	Crea el directorio `/var/lib/postgresql/archive` desde el usuario `postgres`.
+-	Desde el usuario `postgres`. Crea el directorio `/var/lib/postgresql/archive`
 	```
 	mkdir /var/lib/postgresql/archive
 	```
--	Edita y cambia en el archivo de configuración de parámetros `postgresql.conf` los siguientes parámetros y la ruta donde deseas archivar los Write-Ahead Log (WAL) de rotación (archive_command).
+-	Edita y cambia en el archivo de configuración de parámetros `postgresql.conf` con los siguientes valores:
+  
 -	Asegúrate de que los parámetros `wal_level`, `archive_mode` y `archive_command` estén configurados para permitir respaldos.
 	```
-	Edita el archivo y realiza los siguientes cambios:
+	Realiza los siguientes cambios:
  
  	nano /etc/postgresql/16/main/postgresql.conf
  
 	wal_level = replica
 	archive_mode = on
 	max_wal_senders = 2
-	archive_command = cp %p /var/lib/postgresql/archive/%f
+	archive_command = 'cp %p /var/lib/postgresql/archive/%f'
+
+ 	# Salte de la cuenta postgres con:
+ 	exit
 	```
--	El valor `cp %p /var/lib/postgresql/archive/%f` indica que hay que copiar cada archivo WAL generado por PostgreSQL al directorio `/var/lib/postgresql/archive/`.
+-	La variable `wal_level` indica que puede realizar copias de la base de datos.
+-	La variable `archive_mode` permite almacenar el historico de cambios WAL.
+-	La variable `max_wal_senders` define cuántos procesos de envío de WAL pueden ejecutarse simultáneamente. 
+ -	El valor `cp %p /var/lib/postgresql/archive/%f` indica que hay que copiar cada archivo WAL generado por PostgreSQL al directorio `/var/lib/postgresql/archive/`.
 	- `%p`: ruta completa del archivo WAL original.
 	- `%f`: nombre del archivo WAL.
--	La variable `max_wal_senders` define cuántos procesos de envío de WAL pueden ejecutarse simultáneamente. 
-
+	
 -	Después de cambiar estos parámetros, desde el usuario privilegiado reinicia PostgreSQL:
 	`sudo systemctl restart postgresql`.
 
 **Paso 4.** Realiza el respaldo usando el comando: `pg_basebackup`.
--	Crea el directorio donde se harán los respaldos desde el `usuario postgres`:
+-	Entra de nuevo a la cuenta `postres` y crea el directorio donde se harán los respaldos:
   
-	`mdkir /var/lib/postgresql/respaldos`
+	`mkdir /var/lib/postgresql/respaldos`
 
 -	Ahora, desde la máquina donde deseas almacenar el respaldo (que puede ser el mismo servidor o uno diferente, siempre que la red lo permita y `pg_hba.conf` esté configurado correctamente), puedes ejecutar desde la línea de comandos del shell tu comando `pg_basebackup`:
 Sintaxis: `pg_basebackup -h tu_ip_servidor_primario -D /respaldos/pg -Ft -z -P -U usuario_replicador`.
 
-Ejecuta el comando siguiente para hacer el respaldo:
+Ejecuta el comando para hacer el respaldo:
 
 `pg_basebackup -h localhost -D /var/lib/postgresql/respaldos -Ft -z -P -U replicador`
 
@@ -107,27 +111,27 @@ En donde:
 Del ejercicio anterior, restaura todo el clúster de PostgreSQL. Después verifica que las bases de datos y las tablas junto con sus datos existen y que los datos originales se mantengan.
 
 **Paso 1.** Desde el usuario privilegiado detén PostgreSQL:
-`sudo systemctl stop postgresql`
+- `sudo systemctl stop postgresql`
 
 **Paso 2.** Elimina o renombra el `$PGDATA` actual:
 
-`sudo mv /var/lib/postgresql/16/main   /var/lib/postgresql/16/main_old`
+- `sudo mv /var/lib/postgresql/16/main   /var/lib/postgresql/16/main_old`
 
 **Paso 3.** Crea el directorio `$PGDATA` desde el usuario `postgres`:
 
 sudo -i -u postgres
 
-`mkdir  /var/lib/postgresql/16/main` 
+- `mkdir  /var/lib/postgresql/16/main` 
 
 **Paso 4.** Cambiate al directorio de `respaldos` y ejecuta el comando tar para extrar el respaldo.
 
-`cd /var/lib/postgresql/respaldos`
+- `cd /var/lib/postgresql/respaldos`
 
-`tar -xzf base.tar.gz -C /var/lib/postgresql/16/main`
+- `tar -xzf base.tar.gz -C /var/lib/postgresql/16/main`
 
 **Paso 5.** Restaura los archivos de WAL.
 
-`tar -xzf pg_wal.tar.gz -C /var/lib/postgresql/16/main/pg_wal`
+- `tar -xzf pg_wal.tar.gz -C /var/lib/postgresql/16/main/pg_wal`
 
 - Opcional: si hay `PITR` colocar el archivo `recovery.signal` en el nuevo `$PGDATA`.
 
@@ -140,11 +144,11 @@ sudo chmod 700 /var/lib/postgresql/16/main
 
 **Paso 7.** Desde el usuario privilegiado inicia PostgreSQL:
 
-	`sudo systemctl start postgresql`
+- `sudo systemctl start postgresql`
 
 **Paso 8.** Verifica `logs` y estado:
 
-	`tail -f /var/log/postgresql/postgresql-16-main.log`
+- `tail -f /var/log/postgresql/postgresql-16-main.log`
 
 ### Tarea 3. Uso de Autovacuum: configuración y monitoreo en PostgreSQL
 Comprenderás el funcionamiento del proceso Autovacuum en PostgreSQL, la configuración de sus parámetros y el monitoreo de su actividad.
