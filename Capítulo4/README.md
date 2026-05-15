@@ -67,7 +67,7 @@ En donde:
 	max_wal_senders = 2
 	archive_command = 'cp %p /var/lib/postgresql/archive/%f'
 
- 	# Salte de la cuenta postgres con:
+ 	# Abandona la cuenta postgres con:
  	exit
 	```
 -	La variable `wal_level` indica que puede realizar copias de la base de datos.
