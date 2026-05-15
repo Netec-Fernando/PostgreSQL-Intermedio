@@ -77,8 +77,8 @@ En donde:
 	- `%p`: ruta completa del archivo WAL original.
 	- `%f`: nombre del archivo WAL.
 	
--	Después de cambiar estos parámetros, desde el usuario privilegiado reinicia PostgreSQL:
-	`sudo systemctl restart postgresql`.
+- Después de cambiar estos parámetros, desde el usuario privilegiado reinicia PostgreSQL:
+- `sudo systemctl restart postgresql`.
 
 **Paso 4.** Realiza el respaldo usando el comando: `pg_basebackup`.
 -	Entra de nuevo a la cuenta `postres` y crea el directorio donde se harán los respaldos:
