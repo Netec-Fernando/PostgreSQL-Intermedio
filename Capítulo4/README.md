@@ -137,7 +137,7 @@ Del ejercicio anterior, restaura todo el clúster de PostgreSQL. Después verifi
 
 - Opcional: si hay `PITR` colocar el archivo `recovery.signal` en el nuevo `$PGDATA`.
 
-**Paso 6** (muy importante). Actualiza el propietario y los permisos del directorio `main`.
+**Paso 6.** (muy importante). Actualiza el propietario y los permisos del directorio `main`.
 ```
 sudo chown postgres:postgres /var/lib/postgresql/16/main
 
