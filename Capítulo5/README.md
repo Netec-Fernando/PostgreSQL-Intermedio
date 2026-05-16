@@ -23,6 +23,7 @@ En la siguiente práctica, verás cómo realizar una replicación lógica de bas
 
     `/var/lib/postgresql/esclavo` (puedes llamarle `replica`).
 -	Puertos separados: 5432 (maestro), 5433 (esclavo).
+-	Cambia el puerto del servidor`main` al puerto 5431 o desde el usuario privilegiado da de baja el servidor `main`.
 
 **Paso 1.** Crea los directorios de datos.
 ```
