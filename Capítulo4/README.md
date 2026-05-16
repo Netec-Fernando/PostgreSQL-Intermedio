@@ -121,7 +121,7 @@ Del ejercicio anterior, restaura todo el clúster de PostgreSQL. Después verifi
 
 **Paso 3.** Crea el directorio `$PGDATA` desde el usuario `postgres`:
 
-sudo -i -u postgres
+- `sudo -i -u postgres`
 
 - `mkdir  /var/lib/postgresql/16/main` 
 
