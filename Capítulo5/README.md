@@ -26,20 +26,26 @@ En la siguiente práctica, verás cómo realizar una replicación lógica de bas
 
 **Paso 1.** Crea los directorios de datos.
 ```
+- Desde el usuario privilegiado dar los siguientes comandos:
+
 sudo mkdir -p /var/lib/postgresql/maestro
 sudo mkdir -p /var/lib/postgresql/esclavo
 sudo chown -R postgres:postgres /var/lib/postgresql
 ```
-**Paso 2.** Inicializa el maestro.
+**Paso 2.** Entra a la cuenta de `postgres` e inicializa el maestro.
 ```
-sudo -u postgres /usr/lib/postgresql/16/bin/initdb -D /var/lib/postgresql/maestro
+sudo -i -u postgres
+
+/usr/lib/postgresql/16/bin/initdb -D /var/lib/postgresql/maestro
 ```
 
 **Paso 3.** Configura el `postgresql.conf` del maestro.
 
-Edita el siguiente archivo: `sudo nano /var/lib/postgresql/maestro/postgresql.conf`.
+Edita el siguiente archivo `/var/lib/postgresql/maestro/postgresql.conf`:
 
-Agrega o ajusta:
+`nano /var/lib/postgresql/maestro/postgresql.conf`
+
+Agrega o ajusta los siguientes parámetros:
 ```
 port = 5432
 wal_level = replica
@@ -51,70 +57,72 @@ listen_addresses = '*'
 **Paso 4.** Configura el `pg_hba.conf` del maestro.
 
 ```
-sudo nano /var/lib/postgresql/maestro/pg_hba.conf
+nano /var/lib/postgresql/maestro/pg_hba.conf
 ```
 
-
-Agrega:
-
+Agrega al final del archivo la siguiente línea:
 ```
 host replication replicador 127.0.0.1/32 md5
 ```
 
-**Paso 5.** Crea un usuario de replicación (si no existe) y otorga privilegios.
+**Paso 5.** Arranca el servidor `maestro`y crea un usuario para replicación y otórgale privilegios.
 
 Inicia el maestro en segundo plano:
 ```
-sudo -u postgres /usr/lib/postgresql/16/bin/pg_ctl -D /var/lib/postgresql/maestro -l maestro.log start 
+/usr/lib/postgresql/16/bin/pg_ctl -D /var/lib/postgresql/maestro -l maestro.log start
 ```
-Crea el usuario replicador `psql -p 5432 -U postgres`
+Crea el usuario replicador:
+
+- Conéctate con al usuario `postgres` del maestro:
+  
+`psql -p 5432 -U postgres`
 
 ```sql
+- Crea el role y otórgale privilegios:
+
 CREATE ROLE replicador WITH REPLICATION LOGIN ENCRYPTED PASSWORD 'abc123';
 GRANT USAGE ON SCHEMA public TO replicador;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO replicador;
+\q
 ```
 
 **Paso 6.** Inicializa el esclavo con `pg_basebackup`.
 
-Primero, detén al maestro si necesitas limpiar datos en el esclavo:
+Ejecuta el siguiente comando para realizar una copia del `maestro` al `esclavo`:
 ```
-sudo -u postgres /usr/lib/postgresql/16/bin/pg_ctl -D /var/lib/postgresql/maestro stop
+pg_basebackup -h 127.0.0.1 -p 5432 -D /var/lib/postgresql/esclavo -U replicador -Fp -Xs -P -R
 ```
-Luego, ejecuta:
-```
-sudo -u postgres /usr/lib/postgresql/16/bin/pg_basebackup
-  -h 127.0.0.1 -p 5432 -D /var/lib/postgresql/esclavo 
-  -U replicador -Fp -Xs -P -R
-```
-Esto creará un archivo `standby.signal` automáticamente.
+Esto creará un archivo `standby.signal` automáticamente en el directorio del esclavo.
 
 
 **Paso 7.** Configura el esclavo (`postgresql.conf`).
 ```
-sudo nano /var/lib/postgresql/esclavo/postgresql.conf
+nano /var/lib/postgresql/esclavo/postgresql.conf
 ```
 
-Asegúrate de tener:
+Asegúrate de tener la siguiente configuración:
 ```
 port = 5433
 hot_standby = on
 ```
 
-**Paso 8.** Inicia al maestro y al esclavo.
+**Paso 8.** Inicia el servidor esclavo.
 ```
-sudo -u postgres /usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/maestro -l maestro.log start
-sudo -u postgres /usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/esclavo -l esclavo.log start
+/usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/esclavo -l esclavo.log start
 ```
 
 **Paso 9.**  Verifica la replicación.
 ```
+- Conéctate al servidor `maestro` y ejecuta el siguiente `SELECT`.
+
 psql -p 5432 -c "SELECT * FROM pg_stat_replication;"
 ```
 
 **Paso 10.** Comprueba que el maestro y el esclavo están en ejecución desde la línea de comando del usuario `postgres`.
 ```
-pg_lsclusters
+- Desde el usuario `postgres` ejecuta el siguiente comando, deberás ver los dos servidores en ejecución:
+
+- ps -ef|grep postgresql
 ```
 
 ### Tarea 2. Probar `failover` manual
@@ -122,12 +130,12 @@ Simula la caída del maestro y promueve el esclavo a maestro.
 
 **Paso 1.** Detén al maestro.
 ```
-sudo -u postgres /usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/maestro stop
+/usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/maestro stop
 ```
 
 **Paso 2.** Promueve al esclavo.
 ```
-sudo -u postgres /usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/esclavo promote
+/usr/lib/postgresql/15/bin/pg_ctl -D /var/lib/postgresql/esclavo promote
 ```
 
 **Paso 3.** Valida la promoción.
