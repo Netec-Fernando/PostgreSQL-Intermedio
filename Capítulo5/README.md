@@ -115,7 +115,21 @@ hot_standby = on
 ```
 - Conéctate al servidor `maestro` y ejecuta el siguiente `SELECT`.
 
-psql -p 5432 -c "SELECT * FROM pg_stat_replication;"
+psql -p 5432
+SELECT * FROM pg_stat_replication;
+
+- Crea una tabla con datos y despues verifica que haya sido replicada en el esclavo.
+
+create table pruebas(dato int);
+insert into pruebas values (1),(2),(3),(10);
+select * from pruebas;
+\q
+
+- Conéctate al servidor esclavo y verifica la replicación.
+
+psql -p 5433
+select * from pruebas;
+\q
 ```
 
 **Paso 10.** Comprueba que el maestro y el esclavo están en ejecución desde la línea de comandos.
@@ -125,7 +139,7 @@ psql -p 5432 -c "SELECT * FROM pg_stat_replication;"
 - ps -ef|grep postgresql
 ```
 
-### Tarea 2. Probar `failover` manual
+### Tarea 2. (Opcional) Probar `failover` manual
 Simula la caída del maestro y promueve el esclavo a maestro.
 
 **Paso 1.** Detén al maestro.
@@ -151,29 +165,10 @@ SELECT * FROM test_failover;
 ```
 ## Resultado esperado
 **Monitoreo del estado de la replicación**
-
-```sql
-Ver slots de replicación (Publisher)
-SELECT * FROM pg_replication_slots;
-```
-```sql
-Ver estado de la suscripción (Subscriber)
-SELECT * FROM pg_stat_subscription;
- ```
-```
- Posibles errores y soluciones
-
-❌ Error: "No se pudo iniciar la replicación"
-✔ Verifica que wal_level = logical en el Publisher.
-✔ Confirma que el usuario replicator existe y tiene permisos.
-❌ Datos no aparecen en el Subscriber
-✔ Ejecuta en el Subscriber:
-ALTER SUBSCRIPTION sub_clientes REFRESH PUBLICATION;
-```
  
 ### Conclusión
-¡Has configurado exitosamente la replicación lógica en PostgreSQL 16 en un entorno local!
+¡Has configurado exitosamente la replicación física en PostgreSQL 16 en un entorno local!
 ```
-- Publisher (5432): envía cambios.
-- Subscriber (5433): recibe cambios en tiempo real.
+- maestro (5432): envía cambios.
+- esclavo (5433): recibe cambios en tiempo real.
 ```
