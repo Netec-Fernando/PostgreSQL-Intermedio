@@ -118,7 +118,7 @@ hot_standby = on
 psql -p 5432 -c "SELECT * FROM pg_stat_replication;"
 ```
 
-**Paso 10.** Comprueba que el maestro y el esclavo están en ejecución desde la línea de comando del usuario `postgres`.
+**Paso 10.** Comprueba que el maestro y el esclavo están en ejecución desde la línea de comandos.
 ```
 - Desde el usuario `postgres` ejecuta el siguiente comando, deberás ver los dos servidores en ejecución:
 
